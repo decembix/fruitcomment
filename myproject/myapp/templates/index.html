@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>홈</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-box input {
+            padding: 5px;
+            width: 200px;
+        }
+        .search-box button {
+            padding: 5px;
+        }
+        .container {
+            padding: 140px 20px 20px; /* Header 높이와 비디오 높이만큼 여백을 둡니다 */
+        }
+        .movie-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .movie-item {
+            width: 200px;
+            text-align: center;
+        }
+        .movie-item img {
+            width: 100%;
+            height: auto;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .login-signup {
+            margin-left: auto;
+        }
+
+        /* 영화 포스터 컨테이너 */
+        .poster-container {
+            width: 100%;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            margin-bottom: 20px;
+            overflow: hidden; /* 잘린 부분을 숨깁니다 */
+        }
+
+        .poster-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 비율 유지하면서 자르기 */
+        }
+
+        /* 모달 창 스타일 */
+        #search-modal {
+            display: none; /* 처음에는 보이지 않도록 설정 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            text-align: center;
+            max-height: 80vh; /* 화면의 80%까지 높이를 제한 */
+            overflow-y: auto; /* 내용이 많으면 스크롤 가능 */
+        }
+
+        #results {
+            max-height: 70vh; /* 결과 영역의 최대 높이를 제한 */
+            overflow-y: auto; /* 스크롤 가능하도록 설정 */
+        }
+    </style>
+    <script>
+        const apiKey = 'e5abc725f37f23d195a7177e0f160729'; // 여기에 API 키를 넣으세요
+
+        // 인기 영화 목록 불러오기
+        function fetchPopularMovies() {
+            fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=ko-KR&page=1`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('인기 영화를 불러오는 데 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const movieList = document.getElementById('movie-list');
+                    movieList.innerHTML = '';
+                    if (data.results) {
+                        // 인기 영화 5개만 불러오기
+                        const movies = data.results.slice(0, 5);
+                        movies.forEach(movie => {
+                            const movieElement = document.createElement('div');
+                            movieElement.classList.add('movie-item');
+                            movieElement.innerHTML = `
+                                <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title}">
+                                <h3>${movie.title}</h3>
+                                <p>${movie.release_date}</p>
+                            `;
+                            movieList.appendChild(movieElement);
+                        });
+                        showPoster(movies, 0); // 첫 번째 영화 포스터 표시
+                    } else {
+                        movieList.innerHTML = '<p>영화를 불러오는 데 실패했습니다.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                    document.getElementById('movie-list').innerHTML = `<p>${error.message}</p>`;
+                });
+        }
+
+        // 포스터 표시하기
+        function showPoster(movies, index) {
+            const posterContainer = document.querySelector('.poster-container');
+            posterContainer.innerHTML = ''; // 이전 포스터 삭제
+
+            const movie = movies[index];
+            const posterElement = document.createElement('img');
+            posterElement.src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+            posterElement.alt = movie.title;
+            posterContainer.appendChild(posterElement);
+
+            // 일정 시간 후 다음 영화 포스터로 변경
+            setTimeout(() => {
+                const nextIndex = (index + 1) % movies.length;
+                showPoster(movies, nextIndex);
+            }, 5000); // 5초마다 포스터 변경
+        }
+
+        // 드라마 검색하기
+        function searchTVShows() {
+            const query = document.getElementById("search-input").value;
+            fetch(`/search/?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsDiv = document.getElementById("results");
+                    resultsDiv.innerHTML = "";
+
+                    if (data.results) {
+                        data.results.forEach(show => {
+                            const showElement = document.createElement("div");
+                            showElement.innerHTML = `
+                                <h3>${show.name} (${show.first_air_date})</h3>
+                                <img src="https://image.tmdb.org/t/p/w200${show.poster_path}" alt="${show.name}">
+                                <p>${show.overview}</p>
+                            `;
+                            resultsDiv.appendChild(showElement);
+                        });
+                    } else {
+                        resultsDiv.innerHTML = "<p>검색 결과가 없습니다.</p>";
+                    }
+
+                    // 모달 열기
+                    document.getElementById("search-modal").style.display = "flex";
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        // 페이지 로드 시 인기 영화 목록 불러오기
+        window.onload = function() {
+            fetchPopularMovies();
+        };
+
+        // 모달 창 닫기
+        function closeModal() {
+            document.getElementById("search-modal").style.display = "none";
+        }
+
+        // HOME 버튼 클릭 시 초기화
+        function resetHome() {
+            // 모달 닫기
+            closeModal();
+            
+            // 검색 결과 영역 초기화
+            document.getElementById("results").innerHTML = "";
+
+            // 인기 영화 목록 다시 불러오기
+            fetchPopularMovies();
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="#" onclick="resetHome(); return false;">HOME</a>
+            <a href="#">MOVIE</a>
+            <a href="#">DRAMA</a>
+            <a href="#">CHALLENGE</a>
+            <a href="#">MYPAGE</a>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="드라마 제목을 입력하세요">
+            <button onclick="searchTVShows()">검색</button>
+        </div>
+
+        <div class="login-signup">
+            <a href="#">로그인</a> | <a href="#">회원가입</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>홈 화면</h1>
+
+        <h2>인기 영화 목록</h2>
+
+        <!-- 영화 포스터를 표시할 컨테이너 -->
+        <div class="poster-container">
+            <!-- 포스터가 여기에 표시됩니다 -->
+        </div>
+
+        <div id="movie-list" class="movie-list">
+            <!-- 영화 목록은 자바스크립트로 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 드라마 검색 결과 모달 -->
+    <div id="search-modal" class="modal">
+        <div class="modal-content">
+            <span onclick="closeModal()" style="cursor: pointer; float: right;">X</span>
+            <h2>드라마 검색 결과</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+</body>
+</html>
+
