@@ -1,0 +1,74 @@
+
+/* 영화 정보 섹션 */
+.movie-detail {
+    display: flex;
+    background: linear-gradient(to right, #777, #aaa);
+    color: white;
+    padding: 20px;
+    align-items: center;
+}
+
+.movie-poster {
+    width: 150px;
+    height: 220px;
+    background-color: #ccc;
+    margin-right: 20px;
+}
+
+.movie-info {
+    flex: 1;
+}
+
+/* 출연진 섹션 */
+.cast-section {
+    background: #e5d4c3;
+    padding: 20px;
+}
+
+.cast-list {
+    display: flex;
+    gap: 10px;
+}
+
+.cast-item {
+    width: 60px;
+    height: 60px;
+    background-color: #ddd;
+    border-radius: 50%;
+}
+
+/* 리뷰 섹션 */
+.review-section {
+    padding: 20px;
+}
+
+.review-item {
+    background: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.review-button {
+    display: inline-block;
+    padding: 10px 15px;
+    background: #d4a373;
+    color: white;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* 추천 콘텐츠 섹션 */
+.recommendation-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 20px;
+}
+
+.recommendation-item {
+    background: #ddd;
+    height: 150px;
+}
