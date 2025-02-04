@@ -16,10 +16,7 @@ def search_tv_shows(request):
     data = response.json()
 
     return JsonResponse(data)  # JSON 형식으로 반환
-'''
-def home(request):
-    return HttpResponse("Hello, Django!")
-'''
+
 def home(request):
     return render(request, 'index.html')
 
@@ -28,3 +25,9 @@ def movie(request):
 
 def drama(request):
     return render(request, 'drama.html')
+
+def challenge(request):
+    return render(request, 'challenge.html')
+
+def mypage(request):
+    return render(request, 'mypage.html')
