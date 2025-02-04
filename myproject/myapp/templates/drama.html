@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>드라마</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+        }
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-box input {
+            padding: 5px;
+            width: 200px;
+        }
+        .search-box button {
+            padding: 5px;
+        }
+        .container {
+            padding: 140px 20px 20px; /* Header 높이와 비디오 높이만큼 여백을 둡니다 */
+        }
+        .tv-show-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .tv-show-item {
+            width: 200px;
+            text-align: center;
+        }
+        .tv-show-item img {
+            width: 100%;
+            height: auto;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .login-signup {
+            margin-left: auto;
+        }
+
+        /* 영화 포스터 컨테이너 */
+        .tv-show-poster-container {
+            width: 100%;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            margin-bottom: 20px;
+            overflow: hidden; /* 잘린 부분을 숨깁니다 */
+        }
+
+        .tv-show-poster-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 비율 유지하면서 자르기 */
+        }
+
+        /* 모달 창 스타일 */
+        #search-modal {
+            display: none; /* 처음에는 보이지 않도록 설정 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            text-align: center;
+            max-height: 80vh; /* 화면의 80%까지 높이를 제한 */
+            overflow-y: auto; /* 내용이 많으면 스크롤 가능 */
+        }
+
+        #results {
+            max-height: 70vh; /* 결과 영역의 최대 높이를 제한 */
+            overflow-y: auto; /* 스크롤 가능하도록 설정 */
+        }
+    </style>
+    <script>
+        const apiKey = 'e5abc725f37f23d195a7177e0f160729'; // 여기에 API 키를 넣으세요
+
+        async function fetchPopularTVShows() {
+            let tvShowList = document.getElementById('tv-show-list');
+            tvShowList.innerHTML = ''; // 기존 콘텐츠 비우기
+        
+            const totalPages = 5; // 5페이지까지 가져오기
+            let tvShows = new Map(); // 중복 제거를 위한 Map (key: id)
+        
+            for (let page = 1; page <= totalPages; page++) {
+                try {
+                    const response = await fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${apiKey}&language=ko-KR&page=${page}`);
+                    if (!response.ok) {
+                        throw new Error('인기 드라마를 불러오는 데 실패했습니다.');
+                    }
+        
+                    const data = await response.json();
+                    if (data.results) {
+                        // 'original_language'가 'ko'인 드라마만 필터링
+                        data.results.forEach(show => {
+                            if (show.original_language === 'ko' && !tvShows.has(show.id)) {
+                                tvShows.set(show.id, show); // 중복 제거하면서 추가
+                            }
+                        });
+        
+                        // 6개만 화면에 표시
+                        if (tvShows.size >= 6) {
+                            displayTVShows(Array.from(tvShows.values()).slice(0, 6));
+                            return; // 이미 6개를 불러왔으면 종료
+                        }
+                    }
+                } catch (error) {
+                    console.error(error);
+                    tvShowList.innerHTML = `<p>${error.message}</p>`;
+                    return;
+                }
+            }
+        
+            // 혹시 5페이지를 다 불러와도 6개가 안 찼을 경우
+            displayTVShows(Array.from(tvShows.values()).slice(0, 6));
+        }
+        
+        // 드라마를 화면에 표시하는 함수
+        function displayTVShows(shows) {
+            let tvShowList = document.getElementById('tv-show-list');
+            tvShowList.innerHTML = ''; // 기존 콘텐츠 비우기
+            
+            shows.forEach(show => {
+                const showElement = document.createElement('div');
+                showElement.classList.add('tv-show-item');
+                showElement.innerHTML = `
+                    <img src="https://image.tmdb.org/t/p/w200${show.poster_path}" alt="${show.name}">
+                    <h3>${show.name}</h3>
+                    <p>${show.first_air_date}</p>
+                `;
+                tvShowList.appendChild(showElement);
+            });
+        
+            // 포스터 변경 시작
+            showPoster(shows, 0); // 첫 번째 포스터부터 시작
+        }
+        
+        // 포스터 표시하기
+        function showPoster(shows, index) {
+            const posterContainer = document.querySelector('.tv-show-poster-container');
+            posterContainer.innerHTML = ''; // 이전 포스터 삭제
+        
+            const show = shows[index];
+            const posterElement = document.createElement('img');
+            posterElement.src = `https://image.tmdb.org/t/p/w500${show.poster_path}`;
+            posterElement.alt = show.name;
+            posterContainer.appendChild(posterElement);
+        
+            // 일정 시간 후 다음 드라마 포스터로 변경
+            setTimeout(() => {
+                const nextIndex = (index + 1) % shows.length;
+                showPoster(shows, nextIndex);
+            }, 5000); // 5초마다 포스터 변경
+        }
+        
+        // 페이지 로드 시 인기 드라마 목록 불러오기
+        window.onload = function() {
+            fetchPopularTVShows();
+        };
+
+        // 영화 검색하기
+        let movieData = null;
+        let tvData = null;
+
+        // 영화 및 TV 드라마 검색하기
+        function searchMoviesAndTVShows() {
+            const query = document.getElementById("search-input").value;
+            if (!query) {
+                alert("검색어를 입력하세요!");
+                return;
+            }
+
+            const movieSearchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&language=ko-KR&query=${encodeURIComponent(query)}`;
+            const tvSearchUrl = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&language=ko-KR&query=${encodeURIComponent(query)}`;
+
+            // 두 개의 API 요청을 동시에 실행
+            Promise.all([
+                fetch(movieSearchUrl).then(response => response.json()),
+                fetch(tvSearchUrl).then(response => response.json())
+            ])
+            .then(([movieDataResponse, tvDataResponse]) => {
+                movieData = movieDataResponse.results; // 영화 데이터 저장
+                tvData = tvDataResponse.results; // 드라마 데이터 저장
+
+                // 모달 열기
+                openModal();
+
+                // 처음 모달이 열릴 때 전체 데이터를 보여줌
+                showCategory('all');
+            })
+            .catch(error => {
+                console.error(error);
+                document.getElementById("results").innerHTML = `<p>검색 중 오류가 발생했습니다.</p>`;
+            });
+        }
+
+        // 전체/영화/드라마 카테고리별로 결과 보여주기
+        function showCategory(category) {
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = ""; // 기존 검색 결과 초기화
+
+            let results = [];
+
+            if (category === 'all' || category === 'movie') {
+                if (movieData.length > 0) {
+                    results.push(`<h2>🎬 영화</h2>`);
+                    movieData.forEach(movie => {
+                        results.push(`
+                            <div>
+                                <h3>${movie.title} (${movie.release_date ? movie.release_date.substring(0, 4) : "미정"})</h3>
+                                <img src="https://image.tmdb.org/t/p/w200${movie.poster_path}" alt="${movie.title}">
+                                <p>${movie.overview || "줄거리가 없습니다."}</p>
+                            </div>
+                        `);
+                    });
+                }
+            }
+
+            if (category === 'all' || category === 'tv') {
+                if (tvData.length > 0) {
+                    results.push(`<h2>📺 TV 드라마</h2>`);
+                    tvData.forEach(show => {
+                        results.push(`
+                            <div>
+                                <h3>${show.name} (${show.first_air_date ? show.first_air_date.substring(0, 4) : "미정"})</h3>
+                                <img src="https://image.tmdb.org/t/p/w200${show.poster_path}" alt="${show.name}">
+                                <p>${show.overview || "줄거리가 없습니다."}</p>
+                            </div>
+                        `);
+                    });
+                }
+            }
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = "<p>검색 결과가 없습니다.</p>";
+            } else {
+                resultsDiv.innerHTML = results.join(""); // 결과 출력
+            }
+        }
+
+        // 모달 열기
+        function openModal() {
+            document.getElementById("search-modal").style.display = "flex";
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById("search-modal").style.display = "none";
+        }
+
+        
+    </script>
+</head>
+<body>
+    <header>
+        <div class="nav-links">
+            <a href="{% url 'home' %}">HOME</a>
+            <a href="{% url 'movie' %}">MOVIE</a>
+            <a href="{% url 'drama' %}">DRAMA</a>
+            <a href="#">CHALLENGE</a>
+            <a href="#">MYPAGE</a>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="search-input" placeholder="영화/드라마 제목을 입력하세요">
+            <button onclick="searchMoviesAndTVShows()">검색</button>
+        </div>
+
+        <div class="login-signup">
+            <a href="#">로그인</a> | <a href="#">회원가입</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>드라마 화면</h1>
+
+
+        <!-- 영화 포스터를 표시할 컨테이너 -->
+        <div class="tv-show-poster-container">
+            <!-- 포스터가 여기에 표시됩니다 -->
+        </div>
+
+        <h2> 인기 드라마 목록 </h2>
+
+        <div id="tv-show-list" class="tv-show-list">
+            <!-- 영화 목록은 자바스크립트로 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 모달 -->
+<div id="search-modal" style="display:none;">
+    <div class="modal-content">
+        <!-- 닫기 버튼 -->
+        <span onclick="closeModal()" style="cursor: pointer; float: right;">X</span>
+
+        <!-- 카테고리 선택 버튼 -->
+        <div id="category-buttons">
+            <button onclick="showCategory('all')">전체</button>
+            <button onclick="showCategory('movie')">영화</button>
+            <button onclick="showCategory('tv')">드라마</button>
+        </div>
+
+        <!-- 검색 결과 -->
+        <div id="results"></div>
+    </div>
+</div>
+</body>
+</html>

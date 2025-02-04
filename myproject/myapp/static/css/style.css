@@ -1,0 +1,213 @@
+body {
+    margin: 0;
+    font-family: "ABeeZee", sans-serif;
+    background: #F9F5F0;
+}
+
+/* 네비게이션 바 */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    background: #E9C8A9;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+/* 네비게이션 링크 */
+nav a {
+    text-decoration: none;
+    margin: 0 15px;
+    color: black;
+    font-weight: bold;
+}
+/* ✅ 헤더 내 검색창 스타일 */
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+.search-box input {
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+}
+/* ✅ 검색 버튼 스타일 */
+.search-box button {
+    width: 20px;
+    height: 20px;
+    background-image: url("../image/search_icon.png"); /* 상대 경로로 접근 */
+    background-size: 70%;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: none;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.search-box button:hover {
+    transform: scale(1.1);
+}
+
+
+
+/* ✅ 로그인 및 회원가입 버튼 스타일 */
+.auth-buttons a, .auth-buttons button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 20px;
+    transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+
+/* 로그인 버튼 */
+.auth-buttons a {
+    background: transparent;
+    color: #ebebeb;
+    border: 2px solid #828282;
+    display: inline-block;
+    text-align: center;
+}
+
+.auth-buttons a:hover {
+    background: #868686;
+    color: rgb(53, 53, 53);
+    transform: scale(1.05);
+}
+/* 메인 배너 */
+.banner {
+    width: 100%;
+    height: 250px;
+    background: linear-gradient(to right, #aaa, #ddd);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 60px;
+}
+
+.banner-content {
+    color: white;
+    font-size: 24px;
+}
+/* 회원가입 버튼 */
+.auth-buttons button {
+    background: #008c72;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.auth-buttons button:hover {
+    background: #006f5a;
+    transform: scale(1.05);
+}
+
+/* 컨텐츠 섹션 */
+.content-container {
+    padding: 20px;
+}
+
+.section {
+    margin-top: 30px;
+    background: #E9C8A9;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.movie-grid, .review-container {
+    display: flex;
+    gap: 10px;
+}
+
+.movie-card, .review-card, .suggestion-box, .challenge-box {
+    width: 150px;
+    height: 150px;
+    background: white;
+    border-radius: 10px;
+}
+
+/* ✅ 모달 검색 버튼 스타일 */
+.modal-search-box button {
+    padding: 10px 14px;
+    background-color: #007bff;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.modal-search-box button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* 검색 모달창 스타일 */
+.modal {
+    display: none;
+    position: fixed;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 80%;
+    height: 80%;
+    background: rgba(255, 255, 255, 0.5);
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    color: black;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+#results {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.movie-item {
+    width: 150px;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.movie-item img {
+    width: 100%;
+    border-radius: 5px;
+}

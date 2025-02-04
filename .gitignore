@@ -1,0 +1,21 @@
+# 가상환경 폴더 (Windows, macOS, Linux)
+ve/
+
+# __pycache__ 및 컴파일된 Python 파일
+__pycache__/
+*.pyc
+*.pyo
+migrations/
+# 환경 설정 파일
+.env
+
+# 데이터베이스 파일 (sqlite)
+*.sqlite3
+
+# IDE 설정 파일
+.vscode/
+.idea/
+.DS_Store
+
+# 기타 불필요한 파일
+*.log
